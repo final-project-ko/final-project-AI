@@ -12,6 +12,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 import logging
 
+
+
 # 환경변수 로드
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -27,17 +29,17 @@ database = os.getenv("MYSQL_DATABASE")
 class NewsDTO(BaseModel):
     newsChunk: str
 
-async def summary_news(news_chunk: str):
+async def summary_news(newsChunk: str):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     # 뉴스 타이틀 문자열 정형화
-    def clean_Chunk(newsChunk):
-        newsChunk = newsChunk.replace("\n", " ")
-        clean_newsChunk = re.sub(r'[^가-힣A-Za-z0-9 .,!?~()%·\[\]]', '', newsChunk)  
+    def clean_Chunk(news_Chunk):
+        news_Chunk = news_Chunk.replace("\n", " ")
+        clean_newsChunk = re.sub(r'[^가-힣A-Za-z0-9 .,!?~()%·\[\]]', '', news_Chunk)  # 여기를 수정했습니다.
         return clean_newsChunk
 
-    cleaned_Chunk = clean_Chunk(news_chunk)
-    logging.info(f"Received keywordData: {cleaned_Chunk}")
+    cleaned_Chunk = clean_Chunk(newsChunk)
+    logging.info(f"Received SummartData: {cleaned_Chunk}")
 
     # Google API 키 호출
     google_api_key = os.getenv('GOOGLE_API_KEY')
@@ -54,27 +56,37 @@ async def summary_news(news_chunk: str):
             SystemMessage(content=message_content),
             HumanMessage(content=cleaned_Chunk)
         ])
-        news_chunk = result.content  
+        extracted_chunks = result.content  
     except Exception as e:
         print(f"Error during AI description generation: {e}")
-        news_chunk = "Error"  # 예외가 발생한 경우, 여기에서 할당
+        extracted_chunks = "Error"  # 예외가 발생한 경우, 여기에서 할당
         return {"message": "AI description generation failed", "error": str(e)}
     
-    
-        # 만약에 DB가 연결되었다면 > update_summary_titles_for_news 함수 호출 후 실행한다. 
-        # DB 연결 및 요약 데이터 저장
-    db_connection = mysql.connector.connect(host=host, port=mysql_port, user=user, password=password, database=database)
-
-    if db_connection.is_connected():
-        # 가정: news_list[0]은 업데이트하고자 하는 뉴스 데이터의 예시
-        update_result = update_summary_news(db_connection, news_chunk)
-        db_connection.close()  # 사용 후 데이터베이스 연결 종료
-        print(f"Update Before Summary Result: {update_result}")
-    else:
-        raise HTTPException(status_code=500, detail="Database connection failed")
+    # DB 연결 및 요약 데이터 저장
+    try:
+        
+        db_connection = mysql.connector.connect(host=host, port=mysql_port, user=user, password=password, database=database)
+        
+        if db_connection.is_connected():
+            # 현재 실행 순서 가져오기
+            execution_order = get_current_execution_order(db_connection)
+            if execution_order is not None:
+                # 뉴스 요약 업데이트
+                update_result = update_summary_news(db_connection, extracted_chunks, execution_order)
+                print(f"Update Before Summary Result: {update_result}")
+            else:
+                print("Failed to retrieve current execution order.")
+        else:
+            raise HTTPException(status_code=500, detail="Database connection failed")
+    except Exception as e:
+        print(f"Error during database operation: {e}")
+        return {"message": "Database operation failed", "error": str(e)}
+    finally:
+        if db_connection.is_connected():
+            db_connection.close()
 
     return {"message": "AI 요약 키워드가 성공적으로 업데이트 되었습니다."}
-    
+
     
 # 2. DB 업데이트 함수 update_ai_description_for_news
     # 데이터베이스 연결 함수
@@ -100,14 +112,17 @@ def update_execution_order(db_connection, new_order):
     db_connection.commit()
     cursor.close()
 
-def update_summary_news(db_connection, news_chunk, execution_order):
+def update_summary_news(db_connection, extracted_chunks, execution_order):
     column_name = f"summary_news_{execution_order}"
     update_query = f"""
-    UPDATE tbl_summary_news
-    SET {column_name} = %s
-    WHERE summary_news_code = 1
+    INSERT INTO tbl_summary_news (summary_news_code, {column_name})
+    VALUES (1, %s)
+    ON CONFLICT (summary_news_code)
+    DO UPDATE SET {column_name} = EXCLUDED.{column_name}
+    WHERE tbl_summary_news.summary_news_code = 1;
     """
-    update_values = (news_chunk,)
+
+    update_values = (extracted_chunks,)
     
     cursor = db_connection.cursor(dictionary=True)
     try:
@@ -125,16 +140,3 @@ def update_summary_news(db_connection, news_chunk, execution_order):
     update_execution_order(db_connection, new_order)
     
     return "Success"
-
-# 실제 업데이트 로직 실행
-if __name__ == "__main__":
-    db_connection = get_db_connection()
-    try:
-        execution_order = get_current_execution_order(db_connection)
-        if execution_order is not None:
-            update_summary_news(db_connection, "새로운 뉴스 내용", execution_order)
-        else:
-            print("Failed to get the current execution order.")
-    finally:
-        if db_connection.is_connected():
-            db_connection.close()

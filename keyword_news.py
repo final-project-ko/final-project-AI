@@ -43,7 +43,7 @@ async def keyword_news(titles: str):
     google_api_key = os.getenv('GOOGLE_API_KEY')
 
     # ai프롬포트 
-    message_content = "내용 중에서 가장 인기 많은 핫토픽 키워드를 20개 추출해라. 각 단어는 쉼표로 구분해야 하고, 한국어로 대답해라. 키워드 단어 20개만 작성한다."
+    message_content = "내용 중에서 가장 인기 많은 핫토픽 키워드를 20개 추출해라. 쉼표로 구분된 하나의 문장으로 답해야 하고, 한국어로 대답해라. 키워드 단어 20개만 작성한다. 각 단어는 반드시 15글자 이내여야 한다."
 
     # ai 모델: gemini-pro
     model = ChatGoogleGenerativeAI(model="gemini-pro", convert_system_message_to_human=True, temperature=0.3)
@@ -93,10 +93,17 @@ def update_keyword_titles_for_news(db_connection,  extracted_keywords):
 
         update_query = """
         INSERT INTO tbl_keyword_news (keyword_1, keyword_2, keyword_3, keyword_4, keyword_5,
-                                    keyword_6, keyword_7, keyword_8, keyword_9, keyword_10,
-                                    keyword_11, keyword_12, keyword_13, keyword_14, keyword_15,
-                                    keyword_news_code, date)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1, %s);
+                                        keyword_6, keyword_7, keyword_8, keyword_9, keyword_10,
+                                        keyword_11, keyword_12, keyword_13, keyword_14, keyword_15,
+                                        keyword_news_code, date)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1, %s)
+        ON DUPLICATE KEY UPDATE 
+            keyword_1 = VALUES(keyword_1), keyword_2 = VALUES(keyword_2), keyword_3 = VALUES(keyword_3),
+            keyword_4 = VALUES(keyword_4), keyword_5 = VALUES(keyword_5), keyword_6 = VALUES(keyword_6),
+            keyword_7 = VALUES(keyword_7), keyword_8 = VALUES(keyword_8), keyword_9 = VALUES(keyword_9),
+            keyword_10 = VALUES(keyword_10), keyword_11 = VALUES(keyword_11), keyword_12 = VALUES(keyword_12),
+            keyword_13 = VALUES(keyword_13), keyword_14 = VALUES(keyword_14), keyword_15 = VALUES(keyword_15),
+            date = VALUES(date);
         """
         
 
