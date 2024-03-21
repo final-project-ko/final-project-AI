@@ -20,21 +20,21 @@ async def java_connection_test():
     print("java 서버와 연결되어 있습니다.", f"{current_time}")
     return {"message": "Python 서버와 연결되어 있습니다. " + current_time}
 
-@app.post("/receive-news")
-async def receive_news_route(news: NewsDTO):
-    return await receive_news(news)
+# @app.post("/receive-news")
+# async def receive_news_route(news: NewsDTO):
+#     return await receive_news(news)
 
-@app.post("/process-news")
-async def process_news_route(news: NewsDTO):
-    return await process_news(news)
+# @app.post("/process-news")
+# async def process_news_route(news: NewsDTO):
+#     return await process_news(news)
 
-@app.post("/keyword-news")
-async def receive_titles(news: keywordNewsDTO):
-    return await keyword_news(news.titles)
+# @app.post("/keyword-news")
+# async def receive_titles(news: keywordNewsDTO):
+#     return await keyword_news(news.titles)
 
 @app.post("/summary-news")
 async def summary_news_route(request_body: summaryDTO):
-    return await summary_news(request_body.newsChunk)
+    return await summary_news(request_body.newsChunk, request_body.summaryNewsCode)
 
 
 
