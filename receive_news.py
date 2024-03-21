@@ -34,12 +34,6 @@ class NewsDTO(BaseModel):
     transdescription: Optional[str] = None  
     
     
-    
-#     @app.post("/receive-news")
-#     async def receive_news_route(news: NewsDTO):
-#        return await receive_news(news)
-    
-    
 # 1. 뉴스 ai 처리 함수
 async def receive_news(news: NewsDTO):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -141,7 +135,3 @@ def update_ai_description_for_news(db_connection, news):
         if cursor is not None:
             cursor.close()
             
-            
-
-
-

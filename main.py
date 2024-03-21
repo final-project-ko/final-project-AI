@@ -6,11 +6,10 @@ from fastapi import FastAPI
 from process_news import process_news, NewsDTO
 from receive_news import receive_news, NewsDTO
 from keyword_news import keyword_news, keywordNewsDTO
-from summary_news import summary_news, NewsDTO # news_processing.py에서 정의된 클래스와 함수를 가져옵니다.
-import logging
+from summary_news import summary_news, summaryDTO 
 
-# 로그 설정
-logging.basicConfig(level=logging.INFO)
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
 
 app = FastAPI()
 
@@ -34,12 +33,10 @@ async def receive_titles(news: keywordNewsDTO):
     return await keyword_news(news.titles)
 
 @app.post("/summary-news")
-async def summary_news_route(news: NewsDTO):
-    return await summary_news(news.newsChunk)
+async def summary_news_route(request_body: summaryDTO):
+    return await summary_news(request_body.newsChunk)
 
 
-env_path = Path('.') / '.env'
-load_dotenv(dotenv_path=env_path)
 
 server_port = os.getenv("LOCAL_PORT")
 
@@ -50,6 +47,8 @@ def start_server():
 if __name__ == "__main__":
     print("# Python 서버 실행중...")
     start_server()
+
+
 
 
 # 1. 가상환경 접속 : conda activate langchain 
@@ -63,6 +62,4 @@ if __name__ == "__main__":
 
 # 3. http://0.0.0.0:8089/docs로 가면
 # 자동 대화형 API 문서를 볼 수 있습니다. (Swagger UI 제공)
-
-
 
