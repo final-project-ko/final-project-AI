@@ -24,7 +24,6 @@ user = os.getenv("MYSQL_USER")
 password = os.getenv("MYSQL_PASSWORD")
 database = os.getenv("MYSQL_DATABASE")
 
-# 뉴스 데이터 전송 객체 정의
 class summaryDTO(BaseModel):
     newsChunk: str
     summaryNewsCode: int

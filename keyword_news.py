@@ -25,11 +25,11 @@ database = os.getenv("MYSQL_DATABASE")
 
 # 뉴스 제목 문자열을 받는 새로운 DTO 정의
 class keywordNewsDTO(BaseModel):
-    titles: str  # 2000자로 제한된 뉴스 제목 문자열
+    titles: str 
+    keywordNewsCode: int 
 
-async def keyword_news(titles: str):
-    
-            # 제목에서 필요 없는 문자 제거
+async def keyword_news(titles: str, keywordNewsCode: int):
+    # 제목에서 필요 없는 문자 제거
     def clean_title(title):
         title = title.replace("\n", " ")
         clean_text = re.sub(r'[^가-힣A-Za-z0-9 .,!?~()%·\[\]]', '', title)
