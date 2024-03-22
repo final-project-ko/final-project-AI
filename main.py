@@ -36,7 +36,6 @@ async def receive_titles(news: keywordNewsDTO):
 async def summary_news_route(request_body: summaryDTO):
     return await summary_news(request_body.newsChunk, request_body.summaryNewsCode)
 
-
 server_port = os.getenv("LOCAL_PORT")
 
 def start_server():
