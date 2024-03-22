@@ -84,7 +84,7 @@ async def receive_news(news: NewsDTO):
     else:
         raise HTTPException(status_code=500, detail="데이터베이스 연결에 실패했습니다.")
     
-    return {"message": "AI 설명이 성공적으로 업데이트 되었습니다. " + current_time}
+    return
     
     
     
@@ -123,7 +123,6 @@ def update_ai_description_for_news(db_connection, news):
             # 데이터베이스에 변경사항 적용
             db_connection.commit()
             
-            print(f"ai뉴스가 업로드 되었습니다. 코드번호: {news.code}")
             return "Success"
     
         

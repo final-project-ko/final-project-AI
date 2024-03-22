@@ -86,7 +86,7 @@ async def process_news(news: NewsDTO):
     else:
         raise HTTPException(status_code=500, detail="데이터베이스 연결에 실패했습니다.")
     
-    return {"message": "AI 번역이 성공적으로 업데이트 되었습니다. " + current_time}
+    return
     
     
     

@@ -102,7 +102,7 @@ async def summary_news(newsChunk: str, summaryNewsCode: int):
         if db_connection.is_connected():
             db_connection.close()
 
-    return {"message": "AI 요약 키워드가 성공적으로 업데이트 되었습니다."}
+    return
 
     
 # 2. DB 업데이트 함수 update_ai_description_for_news

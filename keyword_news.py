@@ -75,7 +75,7 @@ async def keyword_news(titles: str, keywordNewsCode: int):
     else:
         raise HTTPException(status_code=500, detail="데이터베이스 연결에 실패했습니다.")
     
-    return {"message": "AI 키워드 추출이 성공적으로 업데이트 되었습니다."}
+    return 
     
     
 # 2. DB 업데이트 함수 update_keyword_titles_for_news
